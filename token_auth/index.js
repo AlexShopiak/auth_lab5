@@ -58,11 +58,26 @@ class Session {
 
 const sessions = new Session();
 
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
     const token = req.headers[SESSION_KEY];
     if (token) {
-        req.session = sessions.get(token);
-        req.sessionId = token;
+        try {
+            const pubKeyData = await axios('https://dev-7sfm4dwi0agzg42e.us.auth0.com/pem');
+            const public_key = pubKeyData.data;
+
+            const decoded = jwt.verify(token, public_key, {
+                algorithms: ['RS256'],
+                audience: 'https://dev-7sfm4dwi0agzg42e.us.auth0.com/api/v2/',
+                issuer: 'https://dev-7sfm4dwi0agzg42e.us.auth0.com/'
+            });
+            
+            req.session = sessions.get(token);
+            req.sessionId = token;
+        } catch (error) {
+            console.error('Error verifying token', error.response ? error.response.data : error.message);
+            return res.status(400).send("Invalid token");
+        }
+        
     }
 
     next();
