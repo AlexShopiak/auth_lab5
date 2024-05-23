@@ -1,6 +1,7 @@
 const uuid = require('uuid');
 const express = require('express');
 const axios = require('axios');
+const jwt = require('jsonwebtoken');
 const bodyParser = require('body-parser');
 const path = require('path');
 const port = 3000;
